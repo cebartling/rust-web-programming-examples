@@ -1,2 +1,2 @@
 # rust-web-programming-examples
-Examples from the book Rust Web Development by Bastian Gruber
+Examples from the book <ins>Rust Web Development</ins> by Bastian Gruber
