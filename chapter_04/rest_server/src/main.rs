@@ -2,16 +2,12 @@ use std::{collections::HashMap, sync::Arc};
 
 use serde::{Deserialize, Serialize};
 use tokio::sync::RwLock;
-use std::{collections::HashMap, sync::Arc};
-
-use serde::{Deserialize, Serialize};
-use tokio::sync::RwLock;
 use warp::{
+    Filter,
     filters::{body::BodyDeserializeError, cors::CorsForbidden},
     http::Method,
     http::StatusCode,
-    reject::Reject,
-    Filter, Rejection, Reply,
+    reject::Reject, Rejection, Reply,
 };
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
