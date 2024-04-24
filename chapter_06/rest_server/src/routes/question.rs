@@ -1,15 +1,18 @@
 use std::collections::HashMap;
 use warp::http::StatusCode;
+use tracing::{instrument, info};
 
 use crate::store::Store;
 use crate::types::pagination::extract_pagination;
 use crate::types::question::{Question, QuestionId};
 use warp_error_handlers::Error;
 
+#[instrument]
 pub async fn get_questions(
     params: HashMap<String, String>,
     store: Store,
 ) -> Result<impl warp::Reply, warp::Rejection> {
+    info!("querying questions");
     if !params.is_empty() {
         let pagination = extract_pagination(params)?;
         let res: Vec<Question> = store.questions.read().await.values().cloned().collect();
