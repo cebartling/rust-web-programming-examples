@@ -1,11 +1,13 @@
 use std::collections::HashMap;
+
+use tracing::{info, instrument};
 use warp::http::StatusCode;
-use tracing::{instrument, info};
+
+use warp_error_handlers::Error;
 
 use crate::store::Store;
 use crate::types::pagination::extract_pagination;
 use crate::types::question::{Question, QuestionId};
-use warp_error_handlers::Error;
 
 #[instrument]
 pub async fn get_questions(
@@ -30,6 +32,7 @@ pub async fn update_question(
     store: Store,
     question: Question,
 ) -> Result<impl warp::Reply, warp::Rejection> {
+    info!("updating question {:?}", id);
     match store.questions.write().await.get_mut(&QuestionId(id)) {
         Some(q) => *q = question,
         None => return Err(warp::reject::custom(Error::QuestionNotFound)),
@@ -43,6 +46,7 @@ pub async fn delete_question(
     id: String,
     store: Store,
 ) -> Result<impl warp::Reply, warp::Rejection> {
+    info!("deleting question {:?}", id);
     match store.questions.write().await.remove(&QuestionId(id)) {
         Some(_) => (),
         None => return Err(warp::reject::custom(Error::QuestionNotFound)),
@@ -56,6 +60,7 @@ pub async fn add_question(
     store: Store,
     question: Question,
 ) -> Result<impl warp::Reply, warp::Rejection> {
+    info!("adding question {:?}", question.id);
     store
         .questions
         .write()
