@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use tracing::instrument;
 use warp::http::StatusCode;
 
 use crate::store::Store;
@@ -7,6 +8,7 @@ use crate::types::{
     question::QuestionId,
 };
 
+#[instrument]
 pub async fn add_answer(
     store: Store,
     params: HashMap<String, String>,

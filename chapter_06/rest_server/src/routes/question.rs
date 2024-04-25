@@ -24,6 +24,7 @@ pub async fn get_questions(
     }
 }
 
+#[instrument]
 pub async fn update_question(
     id: String,
     store: Store,
@@ -37,6 +38,7 @@ pub async fn update_question(
     Ok(warp::reply::with_status("Question updated", StatusCode::OK))
 }
 
+#[instrument]
 pub async fn delete_question(
     id: String,
     store: Store,
@@ -49,6 +51,7 @@ pub async fn delete_question(
     Ok(warp::reply::with_status("Question deleted", StatusCode::OK))
 }
 
+#[instrument]
 pub async fn add_question(
     store: Store,
     question: Question,
