@@ -15,9 +15,8 @@ async fn main() {
         "handle_errors=warn,practical_rust_book=warn,warp=warn".to_owned()
     });
 
-    // TODO: Change the connection string to match your database
     let store =
-        store::Store::new("postgres://localhost:5432?dbname=postgres&user=postgres&password=postgres").await;
+        store::Store::new("postgres://localhost:5432?dbname=rustwebdev_db&user=rustwebdev&password=rustwebdev").await;
 
     sqlx::migrate!()
         .run(&store.clone().connection)
