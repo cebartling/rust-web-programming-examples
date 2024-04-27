@@ -36,6 +36,7 @@ impl Store {
     ) -> Result<Vec<Question>, Error> {
         let converted_limit = limit.map(|l| l as i64);
         let converted_offset = offset as i64;
+
         match sqlx::query("SELECT * from questions LIMIT $1 OFFSET $2")
             .bind(converted_limit.unwrap_or(10))
             .bind(converted_offset)
