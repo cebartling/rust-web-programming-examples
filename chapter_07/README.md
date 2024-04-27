@@ -1,13 +1,30 @@
 # Chapter 7: Integration with PostgreSQL
 
-## Docker Compose
+## Postgres and Docker Compose
 
-- Docker Compose is used to start the PostgreSQL database. An initialization script, `rest_server/db/init.sql`, is used
+- The PostgreSQL database is used to store the questions and answers. The database is started using Docker Compose.
+- The Docker Compose configuration file contains an initialization script, `rest_server/db/init.sql`, which is used
   to create the role and database and transfer ownership of the database.
     - Use `docker-compose up` to start the PostgreSQL database.
     - Use `docker-compose down --volumes` to stop the PostgreSQL database.
 - The database is available at `localhost:5432` with the username `rustwebdev` and password `rustwebdev`.
 - The database name is `rustwebdev_db`.
+
+## sqlx
+
+- The `sqlx` crate is used to interact with the PostgreSQL database.
+- The `migrations` directory contains the SQL migration files. When the web server starts, the migration files are
+  executed by sqlx:
+
+  ```rust
+  let store =
+      store::Store::new("postgres://localhost:5432?dbname=rustwebdev_db&user=rustwebdev&password=rustwebdev").await;
+  
+  sqlx::migrate!()
+      .run(&store.clone().connection)
+      .await
+      .expect("Cannot migrate DB");
+  ```
 
 ## Logging
 
