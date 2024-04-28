@@ -1,4 +1,4 @@
-# Chapter 7: Integration with PostgreSQL
+# Chapter 8: API Integration
 
 ## Postgres and Docker Compose
 
@@ -10,21 +10,6 @@
 - The database is available at `localhost:5432` with the username `rustwebdev` and password `rustwebdev`.
 - The database name is `rustwebdev_db`.
 
-## sqlx
-
-- The `sqlx` crate is used to interact with the PostgreSQL database.
-- The `migrations` directory contains the SQL migration files. When the web server starts, the migration files are
-  executed by sqlx:
-
-  ```rust
-  let store =
-      store::Store::new("postgres://localhost:5432?dbname=rustwebdev_db&user=rustwebdev&password=rustwebdev").await;
-  
-  sqlx::migrate!()
-      .run(&store.clone().connection)
-      .await
-      .expect("Cannot migrate DB");
-  ```
 
 ## Logging
 
