@@ -38,9 +38,12 @@ pub async fn check_profanity(
         .with(RetryTransientMiddleware::new_with_policy(retry_policy))
         .build();
 
+    let api_key = dotenv::var("BAD_WORDS_API_KEY").unwrap();
+    println!("API Key: {}", api_key);
+
     let res = client
         .post("https://api.apilayer.com/bad_words?censor_character=*")
-        .header("apikey", "API_KEY")
+        .header("apikey", api_key)
         .body(content)
         .send()
         .await

@@ -13,8 +13,6 @@ mod types;
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-    let api_key = dotenv::var("BAD_WORDS_API_KEY").unwrap();
-    println!("API Key: {}", api_key);
 
     let log_filter = std::env::var("RUST_LOG").unwrap_or_else(|_| {
         "handle_errors=warn,practical_rust_book=warn,warp=warn".to_owned()
