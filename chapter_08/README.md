@@ -10,7 +10,6 @@
 - The database is available at `localhost:5432` with the username `rustwebdev` and password `rustwebdev`.
 - The database name is `rustwebdev_db`.
 
-
 ## Logging
 
 - Use `RUST_LOG=info` to set the log level to info. For example, `RUST_LOG=info cargo run`.
@@ -30,8 +29,8 @@ curl --location --request GET 'localhost:3030/questions'
 curl --location --request POST 'localhost:3030/questions' \
       --header 'Content-Type: application/json' \
       --data-raw '{
-      "title": "The second question ever asked for this service",
-      "content": "This is the second question content ever asked for this service"
+      "title": "The second question ever asked for this service was bullshit!",
+      "content": "This is the second question content ever asked for this service was bullshit!"
 }'
 ```
 
