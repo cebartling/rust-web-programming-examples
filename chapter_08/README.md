@@ -37,17 +37,17 @@ curl --location --request POST 'localhost:3030/questions' \
 ### Update a question by id
 
 ```shell
-curl --location --request PUT 'localhost:3030/questions/2' \
+curl --location --request PUT 'localhost:3030/questions/1' \
       --header 'Content-Type: application/json' \
       --data-raw '{
-      "id": 2,
-      "title": "Second question ever asked for this service",
-      "content": "How on Mars did I get this to work?"
+      "id": 1,
+      "title": "Second question ever asked for this service. Fuck!",
+      "content": "How on Mars did I get this to work? Fuck!!!"
 }'
 ```
 
 ### Delete a question by id
 
 ```shell
-curl --location --request DELETE 'localhost:3030/questions/QI0001' 
+curl --location --request DELETE 'localhost:3030/questions/1' 
 ```
