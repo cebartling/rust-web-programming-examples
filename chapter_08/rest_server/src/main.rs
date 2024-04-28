@@ -1,13 +1,13 @@
 #![warn(clippy::all)]
 
-use tracing_subscriber::fmt::format::FmtSpan;
-use warp::{Filter, http::Method};
-
 use error_handlers::return_error;
+use tracing_subscriber::fmt::format::FmtSpan;
+use warp::{http::Method, Filter};
 
+mod profanity;
 mod routes;
-mod types;
 mod store;
+mod types;
 
 #[tokio::main]
 async fn main() {
@@ -21,7 +21,7 @@ async fn main() {
     sqlx::migrate!()
         .run(&store.clone().connection)
         .await
-        .expect("Cannot migrate DB");
+        .expect("Cannot run migrations");
 
     let store_filter = warp::any().map(move || store.clone());
 

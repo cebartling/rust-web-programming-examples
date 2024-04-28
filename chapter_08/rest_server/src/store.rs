@@ -31,15 +31,12 @@ impl Store {
 
     pub async fn get_questions(
         &self,
-        limit: Option<u32>,
-        offset: u32,
+        limit: Option<i32>,
+        offset: i32,
     ) -> Result<Vec<Question>, Error> {
-        let converted_limit = limit.map(|l| l as i64);
-        let converted_offset = offset as i64;
-
         match sqlx::query("SELECT * from questions LIMIT $1 OFFSET $2")
-            .bind(converted_limit.unwrap_or(10))
-            .bind(converted_offset)
+            .bind(limit.unwrap_or(10))
+            .bind(offset)
             .map(|row: PgRow| Question {
                 id: QuestionId(row.get("id")),
                 title: row.get("title"),
