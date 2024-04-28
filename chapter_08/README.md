@@ -10,6 +10,13 @@
 - The database is available at `localhost:5432` with the username `rustwebdev` and password `rustwebdev`.
 - The database name is `rustwebdev_db`.
 
+## Environment Variables
+
+- Using the `dotenv` crate to load environment variables from a `.env` file.
+- The `.env` file contains the following environment variables:
+    - `BAD_WORDS_API_KEY`: The API key from apilayer.com. Get a free API key from https://apilayer.com/.
+    - `POSTGRES_CONNECTION_STRING`: The Postgres connection string.
+
 ## Logging
 
 - Use `RUST_LOG=info` to set the log level to info. For example, `RUST_LOG=info cargo run`.
