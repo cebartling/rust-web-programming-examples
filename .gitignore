@@ -15,3 +15,7 @@ Cargo.lock
 *.pdb
 
 .DS_Store
+
+# Environment file
+.env
+
