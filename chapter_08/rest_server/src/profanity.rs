@@ -38,7 +38,9 @@ pub async fn check_profanity(
         .with(RetryTransientMiddleware::new_with_policy(retry_policy))
         .build();
 
-    let api_key = dotenv::var("BAD_WORDS_API_KEY").unwrap();
+    let api_key = dotenv::var("BAD_WORDS_API_KEY")
+        .expect("BAD_WORDS_API_KEY must be set")
+        .unwrap();
     println!("API Key: {}", api_key);
 
     let res = client

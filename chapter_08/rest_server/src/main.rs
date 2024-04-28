@@ -18,8 +18,11 @@ async fn main() {
         "handle_errors=warn,practical_rust_book=warn,warp=warn".to_owned()
     });
 
-    let store =
-        store::Store::new("postgres://localhost:5432?dbname=rustwebdev_db&user=rustwebdev&password=rustwebdev").await;
+    let db_url = dotenv::var("POSTGRES_CONNECTION_STRING")
+        .expect("POSTGRES_CONNECTION_STRING must be set")
+        .unwrap();
+
+    let store = store::Store::new(db_url).await;
 
     sqlx::migrate!()
         .run(&store.clone().connection)
