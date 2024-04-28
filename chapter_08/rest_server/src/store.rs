@@ -63,17 +63,17 @@ impl Store {
                  VALUES ($1, $2, $3)
                  RETURNING id, title, content, tags",
         )
-            .bind(new_question.title)
-            .bind(new_question.content)
-            .bind(new_question.tags)
-            .map(|row: PgRow| Question {
-                id: QuestionId(row.get("id")),
-                title: row.get("title"),
-                content: row.get("content"),
-                tags: row.get("tags"),
-            })
-            .fetch_one(&self.connection)
-            .await
+        .bind(new_question.title)
+        .bind(new_question.content)
+        .bind(new_question.tags)
+        .map(|row: PgRow| Question {
+            id: QuestionId(row.get("id")),
+            title: row.get("title"),
+            content: row.get("content"),
+            tags: row.get("tags"),
+        })
+        .fetch_one(&self.connection)
+        .await
         {
             Ok(question) => Ok(question),
             Err(e) => {
@@ -93,18 +93,18 @@ impl Store {
         WHERE id = $4
         RETURNING id, title, content, tags",
         )
-            .bind(question.title)
-            .bind(question.content)
-            .bind(question.tags)
-            .bind(question_id)
-            .map(|row: PgRow| Question {
-                id: QuestionId(row.get("id")),
-                title: row.get("title"),
-                content: row.get("content"),
-                tags: row.get("tags"),
-            })
-            .fetch_one(&self.connection)
-            .await
+        .bind(question.title)
+        .bind(question.content)
+        .bind(question.tags)
+        .bind(question_id)
+        .map(|row: PgRow| Question {
+            id: QuestionId(row.get("id")),
+            title: row.get("title"),
+            content: row.get("content"),
+            tags: row.get("tags"),
+        })
+        .fetch_one(&self.connection)
+        .await
         {
             Ok(question) => Ok(question),
             Err(e) => {
@@ -138,15 +138,15 @@ impl Store {
         match sqlx::query(
             "INSERT INTO answers (content, question_id) VALUES ($1, $2)",
         )
-            .bind(new_answer.content)
-            .bind(new_answer.question_id.0)
-            .map(|row: PgRow| Answer {
-                id: AnswerId(row.get("id")),
-                content: row.get("content"),
-                question_id: QuestionId(row.get("question_id")),
-            })
-            .fetch_one(&self.connection)
-            .await
+        .bind(new_answer.content)
+        .bind(new_answer.question_id.0)
+        .map(|row: PgRow| Answer {
+            id: AnswerId(row.get("id")),
+            content: row.get("content"),
+            question_id: QuestionId(row.get("question_id")),
+        })
+        .fetch_one(&self.connection)
+        .await
         {
             Ok(answer) => Ok(answer),
             Err(e) => {
