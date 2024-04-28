@@ -11,7 +11,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.1.1", features = ["full"] }
 # We can omit the version number for local imports
-warp_error_handlers = { path = "../warp_error_handlers" }
+error_handlers = { path = "../error_handlers" }
 log = "0.4"
 env_logger = "0.11"
 log4rs = "1.3"

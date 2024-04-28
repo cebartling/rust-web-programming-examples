@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use warp_error_handlers::Error;
+use error_handlers::Error;
 
 /// Pagination struct which is getting extract
 /// from query params

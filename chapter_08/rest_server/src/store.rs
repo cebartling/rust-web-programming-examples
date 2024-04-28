@@ -1,7 +1,7 @@
 use sqlx::postgres::{PgPool, PgPoolOptions, PgRow};
 use sqlx::Row;
 
-use warp_error_handlers::Error;
+use error_handlers::Error;
 
 use crate::types::{
     answer::{Answer, AnswerId, NewAnswer},
