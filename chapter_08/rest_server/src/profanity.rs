@@ -39,8 +39,7 @@ pub async fn check_profanity(
         .build();
 
     let api_key = dotenv::var("BAD_WORDS_API_KEY")
-        .expect("BAD_WORDS_API_KEY must be set")
-        .unwrap();
+        .expect("BAD_WORDS_API_KEY must be set");
     println!("API Key: {}", api_key);
 
     let res = client

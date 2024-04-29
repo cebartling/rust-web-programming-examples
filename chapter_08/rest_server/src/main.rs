@@ -19,10 +19,9 @@ async fn main() {
     });
 
     let db_url = dotenv::var("POSTGRES_CONNECTION_STRING")
-        .expect("POSTGRES_CONNECTION_STRING must be set")
-        .unwrap();
+        .expect("POSTGRES_CONNECTION_STRING must be set");
 
-    let store = store::Store::new(db_url).await;
+    let store = store::Store::new(&db_url).await;
 
     sqlx::migrate!()
         .run(&store.clone().connection)
