@@ -23,3 +23,7 @@ reqwest = { version = "0.12", features = ["json"] }
 reqwest-middleware = "0.3"
 reqwest-retry = "0.5"
 dotenv = "0.15.0"
+rand = "0.8"
+rust-argon2 = "1.0"
+paseto = "2.0"
+chrono = "0.4.19"
