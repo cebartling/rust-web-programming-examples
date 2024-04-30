@@ -1,4 +1,4 @@
-# Chapter 8: API Integration
+# Chapter 9: Authentication and Authorization
 
 ## Postgres and Docker Compose
 
