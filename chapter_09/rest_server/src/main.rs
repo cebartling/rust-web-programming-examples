@@ -1,6 +1,7 @@
 #![warn(clippy::all)]
 
 use dotenv::dotenv;
+use tracing::info;
 use error_handlers::return_error;
 use tracing_subscriber::fmt::format::FmtSpan;
 use warp::{http::Method, Filter};
@@ -12,21 +13,27 @@ mod types;
 
 #[tokio::main]
 async fn main() {
+    let log_filter = std::env::var("RUST_LOG").unwrap_or_else(|_| {
+        "handle_errors=info,practical_rust_book=info,warp=info".to_owned()
+    });
+
+    info!("Starting up...");
+    info!("Reading .env file for environment variables...");
     dotenv().ok();
 
-    let log_filter = std::env::var("RUST_LOG").unwrap_or_else(|_| {
-        "handle_errors=warn,practical_rust_book=warn,warp=warn".to_owned()
-    });
 
     let db_url = dotenv::var("POSTGRES_CONNECTION_STRING")
         .expect("POSTGRES_CONNECTION_STRING must be set");
 
+    info!("Connecting to the database...");
     let store = store::Store::new(&db_url).await;
 
+    info!("Migrating the database...");
     sqlx::migrate!()
         .run(&store.clone().connection)
         .await
         .expect("Cannot run migrations");
+    info!("Finished migrating the database!");
 
     let store_filter = warp::any().map(move || store.clone());
 
