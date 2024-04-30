@@ -1,10 +1,10 @@
 #![warn(clippy::all)]
 
 use dotenv::dotenv;
-use tracing::info;
-use error_handlers::return_error;
 use tracing_subscriber::fmt::format::FmtSpan;
-use warp::{http::Method, Filter};
+use warp::{Filter, http::Method};
+
+use error_handlers::return_error;
 
 mod profanity;
 mod routes;
@@ -17,23 +17,23 @@ async fn main() {
         "handle_errors=info,practical_rust_book=info,warp=info".to_owned()
     });
 
-    info!("Starting up...");
-    info!("Reading .env file for environment variables...");
+    println!("Starting up...");
+    println!("Reading .env file for environment variables...");
     dotenv().ok();
 
 
     let db_url = dotenv::var("POSTGRES_CONNECTION_STRING")
         .expect("POSTGRES_CONNECTION_STRING must be set");
 
-    info!("Connecting to the database...");
+    println!("Connecting to the database...");
     let store = store::Store::new(&db_url).await;
 
-    info!("Migrating the database...");
+    println!("Migrating the database...");
     sqlx::migrate!()
         .run(&store.clone().connection)
         .await
         .expect("Cannot run migrations");
-    info!("Finished migrating the database!");
+    println!("Finished migrating the database!");
 
     let store_filter = warp::any().map(move || store.clone());
 
