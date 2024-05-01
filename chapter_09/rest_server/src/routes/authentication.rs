@@ -38,9 +38,10 @@ pub async fn login(
         ) {
             Ok(verified) => {
                 if verified {
-                    Ok(warp::reply::json(&issue_token(
+                    let token = issue_token(
                         account.id.expect("id not found"),
-                    )))
+                    );
+                    Ok(warp::reply::json(&serde_json::json!({ "token": token })))
                 } else {
                     Err(warp::reject::custom(
                         error_handlers::Error::WrongPassword,
