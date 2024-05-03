@@ -18,6 +18,7 @@ pub enum Error {
     Unauthorized,
     ArgonLibraryError(ArgonError),
     DatabaseQueryError(sqlx::Error),
+    MigrationError(sqlx::migrate::MigrateError),
     ReqwestAPIError(ReqwestError),
     MiddlewareReqwestAPIError(MiddlewareReqwestError),
     ClientError(APILayerError),
@@ -45,19 +46,17 @@ impl std::fmt::Display for Error {
             Error::MissingParameters => write!(f, "Missing parameter"),
             Error::WrongPassword => write!(f, "Wrong password"),
             Error::CannotDecryptToken => write!(f, "Cannot decrypt error"),
-            Error::Unauthorized => write!(
-                f,
-                "No permission to change the underlying resource"
-            ),
+            Error::Unauthorized => write!(f, "No permission to change the underlying resource"),
             Error::ArgonLibraryError(_) => {
                 write!(f, "Cannot verifiy password")
-            },
+            }
             Error::DatabaseQueryError(_) => {
                 write!(f, "Cannot update, invalid data")
-            },
+            }
+            Error::MigrationError(_) => write!(f, "Cannot migrate data"),
             Error::ReqwestAPIError(err) => {
                 write!(f, "External API error: {}", err)
-            },
+            }
             Error::MiddlewareReqwestAPIError(err) => {
                 write!(f, "External API error: {}", err)
             }
@@ -83,9 +82,7 @@ pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
 
         match e {
             sqlx::Error::Database(err) => {
-                if err.code().unwrap().parse::<u32>().unwrap()
-                    == DUPLICATE_KEY
-                {
+                if err.code().unwrap().parse::<u32>().unwrap() == DUPLICATE_KEY {
                     Ok(warp::reply::with_status(
                         "Account already exsists".to_string(),
                         StatusCode::UNPROCESSABLE_ENTITY,
@@ -120,9 +117,7 @@ pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
             "Wrong E-Mail/Password combination".to_string(),
             StatusCode::UNAUTHORIZED,
         ))
-    } else if let Some(crate::Error::MiddlewareReqwestAPIError(e)) =
-        r.find()
-    {
+    } else if let Some(crate::Error::MiddlewareReqwestAPIError(e)) = r.find() {
         event!(Level::ERROR, "{}", e);
         Ok(warp::reply::with_status(
             "Internal Server Error".to_string(),
@@ -147,11 +142,7 @@ pub async fn return_error(r: Rejection) -> Result<impl Reply, Rejection> {
             StatusCode::FORBIDDEN,
         ))
     } else if let Some(error) = r.find::<BodyDeserializeError>() {
-        event!(
-            Level::ERROR,
-            "Cannot deserizalize request body: {}",
-            error
-        );
+        event!(Level::ERROR, "Cannot deserizalize request body: {}", error);
         Ok(warp::reply::with_status(
             error.to_string(),
             StatusCode::UNPROCESSABLE_ENTITY,

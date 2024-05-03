@@ -1,7 +1,7 @@
 use argon2::{self, Config};
 use chrono::prelude::*;
 use rand::Rng;
-use std::future;
+use std::{env, future};
 use warp::{http::StatusCode, Filter};
 
 use crate::store::Store;
@@ -38,10 +38,11 @@ pub async fn login(
         ) {
             Ok(verified) => {
                 if verified {
-                    let token = issue_token(
-                        account.id.expect("id not found"),
-                    );
-                    Ok(warp::reply::json(&serde_json::json!({ "token": token })))
+                    let token =
+                        issue_token(account.id.expect("id not found"));
+                    Ok(warp::reply::json(
+                        &serde_json::json!({ "token": token }),
+                    ))
                 } else {
                     Err(warp::reject::custom(
                         error_handlers::Error::WrongPassword,
@@ -59,13 +60,14 @@ pub async fn login(
 pub fn verify_token(
     token: String,
 ) -> Result<Session, error_handlers::Error> {
+    let key = env::var("PASETO_KEY").unwrap();
     let token = paseto::tokens::validate_local_token(
         &token,
         None,
-        &"RANDOM WORDS WINTER MACINTOSH PC".as_bytes(),
+        key.as_bytes(),
         &paseto::tokens::TimeBackend::Chrono,
     )
-        .map_err(|_| error_handlers::Error::CannotDecryptToken)?;
+    .map_err(|_| error_handlers::Error::CannotDecryptToken)?;
 
     serde_json::from_value::<Session>(token)
         .map_err(|_| error_handlers::Error::CannotDecryptToken)
@@ -87,11 +89,9 @@ fn verify_password(
 fn issue_token(account_id: AccountId) -> String {
     let current_date_time = Utc::now();
     let dt = current_date_time + chrono::Duration::days(1);
-
+    let key = env::var("PASETO_KEY").unwrap();
     paseto::tokens::PasetoBuilder::new()
-        .set_encryption_key(&Vec::from(
-            "RANDOM WORDS WINTER MACINTOSH PC".as_bytes(),
-        ))
+        .set_encryption_key(&Vec::from(key.as_bytes()))
         .set_expiration(&dt)
         .set_not_before(&Utc::now())
         .set_claim("account_id", serde_json::json!(account_id))

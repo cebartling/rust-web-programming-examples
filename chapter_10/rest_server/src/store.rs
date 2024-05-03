@@ -17,19 +17,16 @@ pub struct Store {
 }
 
 impl Store {
-    pub async fn new(db_url: &str) -> Self {
-        let db_pool = match PgPoolOptions::new()
+    pub async fn new(db_url: &str) -> Result<Self, sqlx::Error> {
+        tracing::warn!("{}", db_url);
+        let db_pool = PgPoolOptions::new()
             .max_connections(5)
             .connect(db_url)
-            .await
-        {
-            Ok(pool) => pool,
-            Err(e) => panic!("Couldn't establish DB connection: {}", e),
-        };
+            .await?;
 
-        Store {
+        Ok(Store {
             connection: db_pool,
-        }
+        })
     }
 
     pub async fn get_questions(
@@ -65,10 +62,10 @@ impl Store {
         match sqlx::query(
             "SELECT * from questions where id = $1 and account_id = $2",
         )
-            .bind(question_id)
-            .bind(account_id.0)
-            .fetch_optional(&self.connection)
-            .await
+        .bind(question_id)
+        .bind(account_id.0)
+        .fetch_optional(&self.connection)
+        .await
         {
             Ok(question) => Ok(question.is_some()),
             Err(e) => {
@@ -115,19 +112,19 @@ impl Store {
         WHERE id = $4 AND account_id = $5
         RETURNING id, title, content, tags",
         )
-            .bind(question.title)
-            .bind(question.content)
-            .bind(question.tags)
-            .bind(id)
-            .bind(account_id.0)
-            .map(|row: PgRow| Question {
-                id: QuestionId(row.get("id")),
-                title: row.get("title"),
-                content: row.get("content"),
-                tags: row.get("tags"),
-            })
-            .fetch_one(&self.connection)
-            .await
+        .bind(question.title)
+        .bind(question.content)
+        .bind(question.tags)
+        .bind(id)
+        .bind(account_id.0)
+        .map(|row: PgRow| Question {
+            id: QuestionId(row.get("id")),
+            title: row.get("title"),
+            content: row.get("content"),
+            tags: row.get("tags"),
+        })
+        .fetch_one(&self.connection)
+        .await
         {
             Ok(question) => Ok(question),
             Err(error) => {
@@ -145,10 +142,10 @@ impl Store {
         match sqlx::query(
             "DELETE FROM questions WHERE id = $1 AND account_id = $2",
         )
-            .bind(id)
-            .bind(account_id.0)
-            .execute(&self.connection)
-            .await
+        .bind(id)
+        .bind(account_id.0)
+        .execute(&self.connection)
+        .await
         {
             Ok(_) => Ok(true),
             Err(e) => {
@@ -203,10 +200,10 @@ impl Store {
         match sqlx::query(
             "INSERT INTO accounts (email, password) VALUES ($1, $2)",
         )
-            .bind(account.email)
-            .bind(account.password)
-            .execute(&self.connection)
-            .await
+        .bind(account.email)
+        .bind(account.password)
+        .execute(&self.connection)
+        .await
         {
             Ok(_) => Ok(true),
             Err(error) => {

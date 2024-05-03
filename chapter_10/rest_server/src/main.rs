@@ -1,12 +1,9 @@
 #![warn(clippy::all)]
 
-// use std::env::args;
-
 use clap::Parser;
-// use config::Config;
-// use dotenv::dotenv;
+//// use dotenv::dotenv;
 use tracing_subscriber::fmt::format::FmtSpan;
-use warp::{Filter, http::Method};
+use warp::{http::Method, Filter};
 
 use error_handlers::return_error;
 
@@ -14,21 +11,6 @@ mod profanity;
 mod routes;
 mod store;
 mod types;
-
-// #[derive(Parser, Debug, Default, serde::Deserialize, PartialEq)]
-// struct Args {
-//     log_level: String,
-//     /// URL for the postgres database
-//     database_host: String,
-//     /// PORT number for the database connection
-//     database_port: u16,
-//     /// Database name
-//     database_name: String,
-//     database_username: String,
-//     database_password: String,
-//     /// Web server port
-//     port: u16,
-// }
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -57,12 +39,7 @@ struct Args {
 }
 
 #[tokio::main]
-async fn main() {
-    // let config = Config::builder()
-    //     .add_source(config::File::with_name("setup"))
-    //     .build()
-    //     .unwrap();
-    // let config = config.try_deserialize::<Args>().unwrap();
+async fn main() -> Result<(), error_handlers::Error> {
     let args = Args::parse();
 
     let log_filter = std::env::var("RUST_LOG").unwrap_or_else(|_| {
@@ -73,14 +50,22 @@ async fn main() {
     });
 
     println!("Starting up...");
-    // println!("Reading .env file for environment variables...");
-    // dotenv().ok();
+    println!("Reading .env file for environment variables...");
+    dotenv::dotenv().ok();
 
-    // let db_url = dotenv::var("POSTGRES_CONNECTION_STRING")
-    //     .expect("POSTGRES_CONNECTION_STRING must be set");
-    //
-    // println!("Connecting to the database...");
-    // let store = store::Store::new(&db_url).await;
+    if let Err(_) = std::env::var("BAD_WORDS_API_KEY") {
+        panic!("BadWords API key not set");
+    }
+
+    if let Err(_) = std::env::var("PASETO_KEY") {
+        panic!("PASETO key not set");
+    }
+
+    let port = std::env::var("PORT")
+        .ok()
+        .map(|val| val.parse::<u16>())
+        .unwrap_or(Ok(3030))
+        .map_err(|e| error_handlers::Error::ParseError(e))?;
 
     let db_url = format!(
         "postgres://{}:{}/{}?user={}&password={}",
@@ -90,7 +75,9 @@ async fn main() {
         args.database_username,
         args.database_password
     );
-    let store = store::Store::new(&db_url).await;
+    let store = store::Store::new(&db_url)
+        .await
+        .map_err(|e| error_handlers::Error::DatabaseQueryError(e))?;
 
     println!("Migrating the database...");
     sqlx::migrate!()
@@ -184,5 +171,7 @@ async fn main() {
         .with(warp::trace::request())
         .recover(return_error);
 
-    warp::serve(routes).run(([127, 0, 0, 1], args.port)).await;
+    warp::serve(routes).run(([127, 0, 0, 1], port)).await;
+
+    Ok(())
 }
