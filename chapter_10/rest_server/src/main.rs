@@ -1,10 +1,12 @@
 #![warn(clippy::all)]
 
+// use std::env::args;
+
 use clap::Parser;
-use config::Config;
-use dotenv::dotenv;
+// use config::Config;
+// use dotenv::dotenv;
 use tracing_subscriber::fmt::format::FmtSpan;
-use warp::{http::Method, Filter};
+use warp::{Filter, http::Method};
 
 use error_handlers::return_error;
 
@@ -13,39 +15,66 @@ mod routes;
 mod store;
 mod types;
 
-#[derive(Parser, Debug, Default, serde::Deserialize, PartialEq)]
+// #[derive(Parser, Debug, Default, serde::Deserialize, PartialEq)]
+// struct Args {
+//     log_level: String,
+//     /// URL for the postgres database
+//     database_host: String,
+//     /// PORT number for the database connection
+//     database_port: u16,
+//     /// Database name
+//     database_name: String,
+//     database_username: String,
+//     database_password: String,
+//     /// Web server port
+//     port: u16,
+// }
+
+#[derive(Parser, Debug)]
+#[clap(author, version, about, long_about = None)]
 struct Args {
+    /// Which errors we want to log (info, warn or error)
+    #[clap(short, long, default_value = "info")]
     log_level: String,
     /// URL for the postgres database
+    #[clap(long, default_value = "localhost")]
     database_host: String,
     /// PORT number for the database connection
+    #[clap(long, default_value = "5432")]
     database_port: u16,
     /// Database name
+    #[clap(long, default_value = "rustwebdev_db")]
     database_name: String,
+    /// Database username
+    #[clap(long, default_value = "rustwebdev")]
     database_username: String,
+    /// Database password
+    #[clap(long, default_value = "rustwebdev")]
     database_password: String,
-    /// Web server port
+    /// PORT number for the database connection
+    #[clap(long, default_value = "3030")]
     port: u16,
 }
 
 #[tokio::main]
 async fn main() {
-    let config = Config::builder()
-        .add_source(config::File::with_name("setup"))
-        .build()
-        .unwrap();
-    let config = config.try_deserialize::<Args>().unwrap();
+    // let config = Config::builder()
+    //     .add_source(config::File::with_name("setup"))
+    //     .build()
+    //     .unwrap();
+    // let config = config.try_deserialize::<Args>().unwrap();
+    let args = Args::parse();
 
     let log_filter = std::env::var("RUST_LOG").unwrap_or_else(|_| {
         format!(
             "handle_errors={},rust_web_dev={},warp={}",
-            config.log_level, config.log_level, config.log_level
+            args.log_level, args.log_level, args.log_level
         )
     });
 
     println!("Starting up...");
-    println!("Reading .env file for environment variables...");
-    dotenv().ok();
+    // println!("Reading .env file for environment variables...");
+    // dotenv().ok();
 
     // let db_url = dotenv::var("POSTGRES_CONNECTION_STRING")
     //     .expect("POSTGRES_CONNECTION_STRING must be set");
@@ -55,11 +84,11 @@ async fn main() {
 
     let db_url = format!(
         "postgres://{}:{}/{}?user={}&password={}",
-        config.database_host,
-        config.database_port,
-        config.database_name,
-        config.database_username,
-        config.database_password
+        args.database_host,
+        args.database_port,
+        args.database_name,
+        args.database_username,
+        args.database_password
     );
     let store = store::Store::new(&db_url).await;
 
@@ -155,5 +184,5 @@ async fn main() {
         .with(warp::trace::request())
         .recover(return_error);
 
-    warp::serve(routes).run(([127, 0, 0, 1], config.port)).await;
+    warp::serve(routes).run(([127, 0, 0, 1], args.port)).await;
 }
