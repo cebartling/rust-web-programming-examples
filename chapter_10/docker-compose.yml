@@ -1,5 +1,5 @@
 services:
-  db:
+  database:
     image: postgres:16-alpine
     restart: always
     environment:
@@ -10,6 +10,19 @@ services:
     volumes:
       - db:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    networks:
+      - default
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: rest_server/.env
+    depends_on:
+      - database
+    networks:
+      - default
+    ports:
+      - "3030:3030"
 volumes:
   db:
     driver: local
