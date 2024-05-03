@@ -1,4 +1,9 @@
-# Chapter 9: Authentication and Authorization
+# Chapter 10: Deploying Your Application
+
+## Configuration
+
+- The configuration file is `rest_server/setup.toml`.
+
 
 ## Postgres and Docker Compose
 

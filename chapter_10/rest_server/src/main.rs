@@ -1,8 +1,10 @@
 #![warn(clippy::all)]
 
+use clap::Parser;
+use config::Config;
 use dotenv::dotenv;
 use tracing_subscriber::fmt::format::FmtSpan;
-use warp::{Filter, http::Method};
+use warp::{http::Method, Filter};
 
 use error_handlers::return_error;
 
@@ -11,21 +13,54 @@ mod routes;
 mod store;
 mod types;
 
+#[derive(Parser, Debug, Default, serde::Deserialize, PartialEq)]
+struct Args {
+    log_level: String,
+    /// URL for the postgres database
+    database_host: String,
+    /// PORT number for the database connection
+    database_port: u16,
+    /// Database name
+    database_name: String,
+    database_username: String,
+    database_password: String,
+    /// Web server port
+    port: u16,
+}
+
 #[tokio::main]
 async fn main() {
+    let config = Config::builder()
+        .add_source(config::File::with_name("setup"))
+        .build()
+        .unwrap();
+    let config = config.try_deserialize::<Args>().unwrap();
+
     let log_filter = std::env::var("RUST_LOG").unwrap_or_else(|_| {
-        "handle_errors=info,practical_rust_book=info,warp=info".to_owned()
+        format!(
+            "handle_errors={},rust_web_dev={},warp={}",
+            config.log_level, config.log_level, config.log_level
+        )
     });
 
     println!("Starting up...");
     println!("Reading .env file for environment variables...");
     dotenv().ok();
 
+    // let db_url = dotenv::var("POSTGRES_CONNECTION_STRING")
+    //     .expect("POSTGRES_CONNECTION_STRING must be set");
+    //
+    // println!("Connecting to the database...");
+    // let store = store::Store::new(&db_url).await;
 
-    let db_url = dotenv::var("POSTGRES_CONNECTION_STRING")
-        .expect("POSTGRES_CONNECTION_STRING must be set");
-
-    println!("Connecting to the database...");
+    let db_url = format!(
+        "postgres://{}:{}/{}?user={}&password={}",
+        config.database_host,
+        config.database_port,
+        config.database_name,
+        config.database_username,
+        config.database_password
+    );
     let store = store::Store::new(&db_url).await;
 
     println!("Migrating the database...");
@@ -120,5 +155,5 @@ async fn main() {
         .with(warp::trace::request())
         .recover(return_error);
 
-    warp::serve(routes).run(([127, 0, 0, 1], 3030)).await;
+    warp::serve(routes).run(([127, 0, 0, 1], config.port)).await;
 }
