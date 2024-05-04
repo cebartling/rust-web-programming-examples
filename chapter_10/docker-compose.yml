@@ -1,6 +1,7 @@
 services:
   database:
     image: postgres:16-alpine
+    container_name: database
     restart: always
     environment:
       - POSTGRES_USER=postgres
@@ -9,10 +10,11 @@ services:
       - '5432:5432'
     volumes:
       - db:/var/lib/postgresql/data
-      - ./db/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./rest_server/db/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
     networks:
       - default
-  server:
+  rest_server:
+    container_name: rest_server
     build:
       context: .
       dockerfile: Dockerfile
@@ -22,7 +24,7 @@ services:
     networks:
       - default
     ports:
-      - "3030:3030"
+      - "8080:8080"
 volumes:
   db:
     driver: local

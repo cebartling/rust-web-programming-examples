@@ -34,7 +34,7 @@ struct Args {
     #[clap(long, default_value = "rustwebdev")]
     database_password: String,
     /// PORT number for the database connection
-    #[clap(long, default_value = "3030")]
+    #[clap(long, default_value = "8080")]
     port: u16,
 }
 
@@ -49,8 +49,8 @@ async fn main() -> Result<(), error_handlers::Error> {
         )
     });
 
-    println!("Starting up...");
-    println!("Reading .env file for environment variables...");
+    tracing::info!("Starting up...");
+    tracing::info!("Reading .env file for environment variables...");
     dotenv::dotenv().ok();
 
     if let Err(_) = std::env::var("BAD_WORDS_API_KEY") {
@@ -61,20 +61,30 @@ async fn main() -> Result<(), error_handlers::Error> {
         panic!("PASETO key not set");
     }
 
+    if let Err(_) = std::env::var("DATABASE_URL") {
+        panic!("DATABASE_URL key not set");
+    }
+
     let port = std::env::var("PORT")
         .ok()
         .map(|val| val.parse::<u16>())
-        .unwrap_or(Ok(3030))
+        .unwrap_or(Ok(8080))
         .map_err(|e| error_handlers::Error::ParseError(e))?;
 
-    let db_url = format!(
-        "postgres://{}:{}/{}?user={}&password={}",
+    let default_db_url = format!(
+        "postgres://{}:{}@{}:{}/{}",
+        args.database_username,
+        args.database_password,
         args.database_host,
         args.database_port,
-        args.database_name,
-        args.database_username,
-        args.database_password
+        args.database_name
     );
+
+    let db_url =
+        dotenv::var("DATABASE_URL").ok().unwrap_or(default_db_url);
+    println!("Database URL: {}", db_url);
+
+    println!("Connecting to the database...");
     let store = store::Store::new(&db_url)
         .await
         .map_err(|e| error_handlers::Error::DatabaseQueryError(e))?;
@@ -170,6 +180,11 @@ async fn main() -> Result<(), error_handlers::Error> {
         .with(cors)
         .with(warp::trace::request())
         .recover(return_error);
+
+    tracing::info!(
+        "Q&A service build ID {}",
+        env!("RUST_WEB_DEV_VERSION")
+    );
 
     warp::serve(routes).run(([127, 0, 0, 1], port)).await;
 
