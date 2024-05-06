@@ -11,6 +11,7 @@ mod profanity;
 mod routes;
 mod store;
 mod types;
+mod config;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
