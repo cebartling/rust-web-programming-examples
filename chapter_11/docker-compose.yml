@@ -1,0 +1,30 @@
+services:
+  database:
+    image: postgres:16-alpine
+    container_name: database
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - db:/var/lib/postgresql/data
+      - ./rest_server/db/init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    networks:
+      - default
+  rest_server:
+    container_name: rest_server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: rest_server/.env
+    depends_on:
+      - database
+    networks:
+      - default
+    ports:
+      - "8080:8080"
+volumes:
+  db:
+    driver: local
