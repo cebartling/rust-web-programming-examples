@@ -1,10 +1,11 @@
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use error_handlers::Error;
 
 /// Pagination struct which is getting extract
 /// from query params
-#[derive(Default, Debug)]
+#[derive(Default, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Pagination {
     /// The index of the last item which has to be returned
     pub limit: Option<i32>,
@@ -52,4 +53,35 @@ pub fn extract_pagination(
     }
 
     Err(Error::MissingParameters)
+}
+
+#[cfg(test)]
+mod pagination_tests {
+    use super::{extract_pagination, HashMap, Pagination};
+    use error_handlers::Error;
+
+    #[test]
+    fn valid_pagination() {
+        let mut params = HashMap::new();
+        params.insert(String::from("limit"), String::from("1"));
+        params.insert(String::from("offset"), String::from("1"));
+        let pagination_result = extract_pagination(params);
+        let expected = Pagination {
+            limit: Some(1),
+            offset: 1,
+        };
+        assert_eq!(pagination_result.unwrap(), expected);
+    }
+
+    #[test]
+    fn missing_offset_parameter() {
+        let mut params = HashMap::new();
+        params.insert(String::from("limit"), String::from("1"));
+
+        let pagination_result =
+            format!("{}", extract_pagination(params).unwrap_err());
+        let expected = format!("{}", Error::MissingParameters);
+
+        assert_eq!(pagination_result, expected);
+    }
 }
