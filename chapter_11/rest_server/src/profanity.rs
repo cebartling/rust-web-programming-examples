@@ -76,7 +76,6 @@ async fn transform_error(res: reqwest::Response) -> error_handlers::APILayerErro
 #[cfg(test)]
 mod profanity_tests {
     use super::{check_profanity, env};
-
     use mock_server::{MockServer, OneshotHandler};
 
     #[tokio::test]
