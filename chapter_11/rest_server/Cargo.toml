@@ -12,6 +12,7 @@ serde_json = "1.0"
 tokio = { version = "1.37", features = ["full"] }
 # We can omit the version number for local imports
 error_handlers = { path = "../error_handlers" }
+mock_server = { path = "../mock_server" }
 log = "0.4"
 env_logger = "0.11"
 log4rs = "1.3"
